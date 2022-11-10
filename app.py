@@ -11,9 +11,16 @@ import reports
 import scopesuite
 
 
+# determine the environment
+if os.name == "nt" and os.path.join(
+        os.path.basename(os.path.dirname(sys.executable)),
+        os.path.basename(sys.executable)) == "Scripts\\python.exe":
+    ROOT_PATH = os.path.dirname(
+        os.path.dirname(os.path.dirname(sys.executable)))
+else:
+    ROOT_PATH = os.path.dirname(sys.executable)
+
 # application constants
-APPLICATION_PATH = os.path.dirname(sys.executable)
-ROOT_PATH = os.path.dirname(os.path.dirname(APPLICATION_PATH))
 DRIVER_PATH = os.path.join(ROOT_PATH, 'chromedriver', 'chromedriver.exe')
 DOWNLOAD_PATH = os.path.join(ROOT_PATH, 'downloads')
 ENV_PATH = os.path.join(ROOT_PATH, '.env')
@@ -109,8 +116,12 @@ def send_reports(email):
 
 # if this file is directly run, call main()
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"\nError in Main Function:\n{repr(e)}\n")
-        __ = input("Press Enter to continue...")
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(f"\nError in Main Function:\n{repr(e)}\n")
+    #     __ = input("Press Enter to continue...")
+    print(os.path.join(
+        os.path.basename(os.path.dirname(sys.executable)),
+        os.path.basename(sys.executable)) == "Scripts\\python.exe")
+    print(os.name)
