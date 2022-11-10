@@ -20,8 +20,7 @@ Personal tools to help automate paperwork.
 &nbsp;&nbsp;&nbsp;&nbsp;
 `python -m pip install -r requirements.txt`
 
-**Step 3:** Drag the `chromedriver` folder into `./env`\
-**Step 4:** Create a `downloads` folder inside `./env`\
-**Step 5:** Put login credentials in `./env/.env`
+**Step 5:** Create `downloads` folder in base directory\
+**Step 6:** Create `.env` file in base directory &amp; insert login credentials
 
 **Done!**

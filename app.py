@@ -1,9 +1,9 @@
-from datetime import datetime
-from dotenv import load_dotenv
 from custom_webdriver import CustomChromeWebDriver
 from email_driver import OutlookClient
-import os
+from dotenv import load_dotenv
+from datetime import datetime
 import sys
+import os
 
 
 import eam
@@ -11,11 +11,12 @@ import reports
 import scopesuite
 
 
+# application constants
 APPLICATION_PATH = os.path.dirname(sys.executable)
-DRIVER_PATH = os.path.join(os.path.dirname(
-    APPLICATION_PATH), 'chromedriver', 'chromedriver.exe')
-DOWNLOAD_PATH = os.path.join(os.path.dirname(APPLICATION_PATH), 'downloads')
-ENV_PATH = os.path.join(os.path.dirname(APPLICATION_PATH), '.env')
+ROOT_PATH = os.path.dirname(os.path.dirname(APPLICATION_PATH))
+DRIVER_PATH = os.path.join(ROOT_PATH, 'chromedriver', 'chromedriver.exe')
+DOWNLOAD_PATH = os.path.join(ROOT_PATH, 'downloads')
+ENV_PATH = os.path.join(ROOT_PATH, '.env')
 
 
 def main():
