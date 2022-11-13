@@ -1,12 +1,12 @@
-from custom_webdriver import CustomChromeWebDriver
-from email_driver import OutlookClient
 from dotenv import load_dotenv
 from datetime import datetime
 import sys
 import os
+from custom_webdriver import CustomChromeWebDriver
 
 
 import eam
+from email_driver import OutlookClient
 import reports
 import scopesuite
 
@@ -14,7 +14,7 @@ import scopesuite
 # determine the environment
 if os.name == "nt" and os.path.join(
         os.path.basename(os.path.dirname(sys.executable)),
-        os.path.basename(sys.executable)) == "Scripts\\python.exe":
+        os.path.basename(sys.executable)) == os.path.join("Scripts", "python.exe"):
     ROOT_PATH = os.path.dirname(
         os.path.dirname(os.path.dirname(sys.executable)))
 else:
@@ -42,13 +42,13 @@ def main():
     email = OutlookClient()
 
     # do the webdriver portion of the automation process
-    # submit_grades(chrome)
+    submit_grades(chrome)
     scrape_work_orders(chrome)
 
     chrome.quit()  # close the webdriver
 
     # do the excel portion of the automation process
-    generate_reports(datetime.today(), DOWNLOAD_PATH)
+    generate_reports(DOWNLOAD_PATH)
 
     # send the reports generated in the last step
     send_reports(email)
@@ -80,7 +80,7 @@ def submit_grades(chrome):
         __ = input("Press Enter to continue...")
 
 
-def generate_reports(date, path):
+def generate_reports(path, date=datetime.today()):
     """
     Generates and formats several reports for a given date based
     on a source file of open work orders. Those reports are then
@@ -89,18 +89,11 @@ def generate_reports(date, path):
 
     try:
         SOURCE_PATH = os.path.join(path, 'Sheet1.xlsx')
-        MAX_COMPLIANCE_REPORT_TARGET_PATH = os.path.join(
-            path, f'Max Compliance {date.strftime("%#m-%#d-%Y")}.xlsx')
-        FOLLOW_UPS_REPORT_TARGET_PATH = os.path.join(
-            path, f'Follow-Ups {date.strftime("%#m-%#d-%Y")}.xlsx')
+        TARGET_PATH = os.path.join(
+            path, f'WO Summary {date.strftime("%#m-%#d-%Y")}.xlsx')
 
-        reports.generate_max_compliance(
-            SOURCE_PATH, MAX_COMPLIANCE_REPORT_TARGET_PATH, date)
-        reports.generate_follow_ups(SOURCE_PATH, FOLLOW_UPS_REPORT_TARGET_PATH)
-
-        reports.format(MAX_COMPLIANCE_REPORT_TARGET_PATH)
-        reports.format(FOLLOW_UPS_REPORT_TARGET_PATH,
-                       delete_min_max_compliance=True)
+        reports.generate_work_order_summary(SOURCE_PATH, TARGET_PATH, date)
+        reports.format_work_order_summary(TARGET_PATH)
     except Exception as e:
         print(f"\nError Generating Reports:\n{repr(e)}\n")
         __ = input("Press Enter to continue...")
@@ -116,12 +109,4 @@ def send_reports(email):
 
 # if this file is directly run, call main()
 if __name__ == "__main__":
-    # try:
-    #     main()
-    # except Exception as e:
-    #     print(f"\nError in Main Function:\n{repr(e)}\n")
-    #     __ = input("Press Enter to continue...")
-    print(os.path.join(
-        os.path.basename(os.path.dirname(sys.executable)),
-        os.path.basename(sys.executable)) == "Scripts\\python.exe")
-    print(os.name)
+    main()
