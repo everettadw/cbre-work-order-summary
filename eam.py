@@ -12,6 +12,9 @@ def scrape_work_orders(chrome: CustomChromeWebDriver):
     INFOR_USERNAME = os.getenv("INFOR_USERNAME")
     INFOR_PASSWORD = os.getenv("INFOR_PASSWORD")
 
+    # start webdriver
+    chrome.start()
+
     # open infor
     chrome.get("https://eam.amazon.com/web/base/logindisp")
 

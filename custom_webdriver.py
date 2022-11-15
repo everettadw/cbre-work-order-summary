@@ -28,19 +28,19 @@ class CustomChromeWebDriver:
             raise Exception('Expected a driver path, but did not get one.')
 
         # setup webdriver options and preferences
-        options = webdriver.ChromeOptions()
-        options.add_argument("start-maximized")
+        self.options = webdriver.ChromeOptions()
+        self.options.add_argument("start-maximized")
 
         if self.download_path is not None:
             prefs = {
                 "download.default_directory": self.download_path
             }
-            options.add_experimental_option("prefs", prefs)
+            self.options.add_experimental_option("prefs", prefs)
 
+    def start(self):
         # configure and assign a webdriver to self
         service = Service(executable_path=self.driver_path)
-        self.driver = webdriver.Chrome(service=service, options=options)
-        self.driver.implicitly_wait(self.default_timeout)
+        self.driver = webdriver.Chrome(service=service, options=self.options)
 
         self.actions = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, self.default_timeout)

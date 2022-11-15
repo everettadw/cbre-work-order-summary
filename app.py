@@ -43,6 +43,7 @@ def main():
 
     # do the webdriver portion of the automation process
     # submit_grades(chrome)
+    # submit_grades(chrome, "WANSEDAV")
     scrape_work_orders(chrome)
 
     chrome.quit()  # close the webdriver
@@ -67,13 +68,13 @@ def scrape_work_orders(chrome):
         __ = input("Press Enter to continue...")
 
 
-def submit_grades(chrome):
+def submit_grades(chrome, username="DEVERDAN"):
     """
     Submits a 100% grade for today in ScopeSuite with all strengths.
     """
 
     try:
-        scopesuite.submit_grades(chrome)
+        scopesuite.submit_grades(chrome, username)
     except Exception as e:
         chrome.quit()
         print(f"\nError Submitting Grades:\n{repr(e)}\n")
