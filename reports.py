@@ -5,7 +5,7 @@ from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from datetime import datetime, timedelta
 
 
-def generate_work_order_summary(source_path, target_path, date=datetime.today()):
+def generate_work_order_summary(source_path, target_path, sheet_to_columns, date=datetime.today()):
     source_df = pd.read_excel(source_path, engine="openpyxl")
     source_df = source_df.convert_dtypes()
     source_df = source_df.drop(
@@ -23,17 +23,20 @@ def generate_work_order_summary(source_path, target_path, date=datetime.today())
         source_df.Type.isin(mc_type_filter) &
         (source_df["PM Compliance Max"] == mc_date_filter)
     ]
+    mc_df = mc_df[sheet_to_columns["Due by Midnight"]]
 
     blog_df = source_df[
         (source_df.Type != "Training - Time for Training Activities (Sys Sched)") &
         (source_df["Sched. Start Date"] <= date)
     ]
     blog_df = blog_df.drop(mc_df.index)
+    blog_df = blog_df[sheet_to_columns["Backlog"]]
 
     tw_df = source_df[
         (source_df["Sched. Start Date"] == tw_date_filter) &
         (source_df.Type != "Training - Time for Training Activities (Sys Sched)")
     ]
+    tw_df = tw_df[sheet_to_columns["Scheduled for Shift"]]
     tw_df = tw_df.sort_values(by=["1 - WO Owner"], ascending=True)
 
     with pd.ExcelWriter(target_path,
@@ -48,7 +51,7 @@ def generate_work_order_summary(source_path, target_path, date=datetime.today())
         if mc_df["Work Order"].count() != 0:
             mc_df.to_excel(
                 writer,
-                sheet_name=f"Due by Midnight {date.strftime('%#m-%#d-%Y')}",
+                sheet_name="Due by Midnight",
                 index=False
             )
         if blog_df["Work Order"].count() != 0:
@@ -59,27 +62,34 @@ def generate_work_order_summary(source_path, target_path, date=datetime.today())
             )
 
 
-def format_work_order_summary(report_path, add_filters=True):
+def format_work_order_summary(report_path, sheet_to_columns):
     # use openpyxl to format the excel file
     wo_summary_report = load_workbook(report_path)
 
     # loop though the workbook sheets
     for sheetname in wo_summary_report.sheetnames:
         sheet = wo_summary_report[sheetname]
+        columns = sheet_to_columns[sheetname]
+        centered_cols = [i for i in range(len(columns)) if columns[i] in [
+            'Work Order', 'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max', 'Reported By']]
+        left_indent_cols = [i for i in range(len(columns)) if columns[i] in [
+            'Description', 'Type', 'Equipment', '1 - WO Owner']]
+        date_cols = [i for i in range(len(columns)) if columns[i] in [
+            'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max']]
 
         # configure alignment for the sheet
         for row in sheet[2:sheet.max_row]:
-            for i in [0, 5, 6, 7, 8]:
+            for i in centered_cols:
                 cell = row[i]
                 cell.alignment = Alignment(
                     horizontal='center', vertical='center')
-            for i in [1, 2, 3, 4]:
+            for i in left_indent_cols:
                 cell = row[i]
                 cell.alignment = Alignment(
                     horizontal='left', vertical='center', indent=1)
 
         for i, cell in enumerate(sheet[1]):
-            if i in [1, 2, 3, 4]:
+            if i in left_indent_cols:
                 cell.alignment = Alignment(
                     horizontal='left', vertical='center', indent=1, wrap_text=True)
             else:
@@ -88,7 +98,7 @@ def format_work_order_summary(report_path, add_filters=True):
 
         # set the number format of the date columns
         for row in sheet[2:sheet.max_row]:
-            for i in [5, 6, 7]:
+            for i in date_cols:
                 row[i].number_format = "m/d/yyyy"
 
         # set the header row height
@@ -138,8 +148,7 @@ def format_work_order_summary(report_path, add_filters=True):
         sheet.freeze_panes = "A2"
 
         # setup a filter
-        if add_filters:
-            sheet.auto_filter.ref = f"A1:{get_column_letter(sheet.max_column)}{sheet.max_row}"
+        sheet.auto_filter.ref = f"A1:{get_column_letter(sheet.max_column)}{sheet.max_row}"
 
     # save and close the file
     wo_summary_report.save(report_path)

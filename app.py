@@ -42,7 +42,7 @@ def main():
     email = OutlookClient()
 
     # do the webdriver portion of the automation process
-    submit_grades(chrome)
+    # submit_grades(chrome)
     scrape_work_orders(chrome)
 
     chrome.quit()  # close the webdriver
@@ -87,13 +87,46 @@ def generate_reports(path, date=datetime.today()):
     stored in the WebDriver's downloads directory.
     """
 
+    sheet_to_columns = {
+        "Due by Midnight": [
+            'Work Order',
+            'Equipment',
+            'Description',
+            '1 - WO Owner',
+            'Type',
+            'Sched. Start Date',
+            'PM Compliance Max',
+            'Reported By'
+        ],
+        "Scheduled for Shift": [
+            'Work Order',
+            'Equipment',
+            'Description',
+            '1 - WO Owner',
+            'PM Compliance Max'
+        ],
+        "Backlog": [
+            'Work Order',
+            'Equipment',
+            'Description',
+            '1 - WO Owner',
+            'Type',
+            'Sched. Start Date',
+            'PM Compliance Max',
+            'Reported By'
+        ]
+    }
+
     try:
-        SOURCE_PATH = os.path.join(path, 'Sheet1.xlsx')
+        SOURCE_PATH = os.path.join(
+            path, 'Sheet1.xlsx')
         TARGET_PATH = os.path.join(
             path, f'WO Summary {date.strftime("%#m-%#d-%Y")}.xlsx')
 
-        reports.generate_work_order_summary(SOURCE_PATH, TARGET_PATH, date)
-        reports.format_work_order_summary(TARGET_PATH)
+        reports.generate_work_order_summary(
+            SOURCE_PATH, TARGET_PATH, sheet_to_columns, date)
+        reports.format_work_order_summary(
+            TARGET_PATH, sheet_to_columns)
     except Exception as e:
         print(f"\nError Generating Reports:\n{repr(e)}\n")
         __ = input("Press Enter to continue...")
