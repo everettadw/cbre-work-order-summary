@@ -25,25 +25,36 @@ class CustomChromeWebDriver:
 
         # ensure a driver_path was supplied
         if not self.driver_path:
-            raise Exception('Expected a driver path, but did not get one.')
+            raise AttributeError(
+                'Expected a driver path, but did not get one.')
 
         # setup webdriver options and preferences
         self.options = webdriver.ChromeOptions()
-        self.options.add_argument("start-maximized")
+        self.options.add_argument("--start-maximized")
+        self.options.add_argument("--log-level=3")
+        self.options.add_experimental_option(
+            "excludeSwitches", ['enable-logging'])
 
         if self.download_path is not None:
             prefs = {
-                "download.default_directory": self.download_path
+                "download.default_directory": self.download_path,
             }
             self.options.add_experimental_option("prefs", prefs)
 
-    def start(self):
+    def __enter__(self):
         # configure and assign a webdriver to self
         service = Service(executable_path=self.driver_path)
         self.driver = webdriver.Chrome(service=service, options=self.options)
 
         self.actions = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, self.default_timeout)
+
+    def __exit__(self, exc_type, exc_value, exc_trace):
+        # close the webdriver
+        self.driver.quit()
+        del self.driver
+        del self.actions
+        del self.wait
 
     def get(self, url):
         """
@@ -115,7 +126,7 @@ class CustomChromeWebDriver:
         'count' files exist.
         """
         if not self.download_path:
-            raise Exception(
+            raise AttributeError(
                 "A download path must be specified in order to call wait_until_downloaded.")
 
         download_timeout = 0
@@ -125,7 +136,3 @@ class CustomChromeWebDriver:
         if download_timeout >= self.max_timeout:
             return False
         return True
-
-    def quit(self) -> None:
-        """Calls driver.quit()."""
-        self.driver.quit()

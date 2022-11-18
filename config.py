@@ -1,11 +1,13 @@
 from datetime import datetime
 
-WO_SUMMARY_TARGET_DATE = datetime.today()
-WO_SUMMARY = {
-    "TARGET_DATE": WO_SUMMARY_TARGET_DATE,
-    "TARGET_FILE_NAME": f"WO Summary {WO_SUMMARY_TARGET_DATE.strftime('%#m-%#d-%Y')}.xlsx",
-    "SOURCE_FILE_NAME": "Sheet1.xlsx",
-    "COLUMN_LAYOUT": {
+
+class WorkOrderSummaryConfig:
+    """Config for work order summary report."""
+
+    TARGET_DATE = datetime.today()
+    TARGET_FILE_NAME = f"WO Summary {TARGET_DATE.strftime('%#m-%#d-%Y')}.xlsx"
+    SOURCE_FILE_NAME = "Sheet1.xlsx"
+    COLUMN_LAYOUT = {
         "Due by Midnight": [
             'Work Order',
             'Equipment',
@@ -21,6 +23,7 @@ WO_SUMMARY = {
             'Equipment',
             'Description',
             '1 - WO Owner',
+            'Assigned to on Activity (Top 8 activities)',
             'PM Compliance Max'
         ],
         "Backlog": [
@@ -48,4 +51,3 @@ WO_SUMMARY = {
             'Sched. Start Date'
         ]
     }
-}

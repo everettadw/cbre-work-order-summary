@@ -1,17 +1,19 @@
-import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.utils.cell import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from datetime import datetime, timedelta
+import pandas as pd
 import pyperclip
 import os
+
+
+import warnings
+warnings.simplefilter("ignore")
 
 
 def generate_work_order_summary(source_path, target_path, sheet_to_columns, date=datetime.today()):
     source_df = pd.read_excel(source_path, engine="openpyxl")
     source_df = source_df.convert_dtypes()
-    source_df = source_df.drop(
-        source_df.columns[[0, 1, 4, 7, 9, 14, 15, 16]], axis=1)
 
     mc_type_filter = [
         "PdM - Work using a Predictive Tool",
@@ -99,7 +101,7 @@ def format_work_order_summary(report_path, sheet_to_columns):
         centered_cols = [i for i in range(len(columns)) if columns[i] in [
             'Work Order', 'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max', 'Reported By']]
         left_indent_cols = [i for i in range(len(columns)) if columns[i] in [
-            'Description', 'Type', 'Equipment', '1 - WO Owner']]
+            'Description', 'Type', 'Equipment', '1 - WO Owner', 'Assigned to on Activity (Top 8 activities)']]
         date_cols = [i for i in range(len(columns)) if columns[i] in [
             'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max']]
 
@@ -174,7 +176,7 @@ def format_work_order_summary(report_path, sheet_to_columns):
         if sheetname == "Scheduled for Shift":
             my_work = ""
             for row in sheet[2:sheet.max_row]:
-                if str(row[3].value) == os.getenv("INFOR_USERNAME"):
+                if os.getenv("INFOR_USERNAME") in str(row[3].value):
                     for i in [0, 2]:
                         my_work += (str(row[i].value) + "\t")
                     my_work += "\n"
