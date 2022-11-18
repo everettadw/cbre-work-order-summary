@@ -3,6 +3,8 @@ from openpyxl import load_workbook
 from openpyxl.utils.cell import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from datetime import datetime, timedelta
+import pyperclip
+import os
 
 
 def generate_work_order_summary(source_path, target_path, sheet_to_columns, date=datetime.today()):
@@ -39,6 +41,18 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
     tw_df = tw_df[sheet_to_columns["Scheduled for Shift"]]
     tw_df = tw_df.sort_values(by=["1 - WO Owner"], ascending=True)
 
+    fu_df = source_df[
+        (source_df["Type"] ==
+         "Follow-Up - Comes from a scheduled WO Checklist (PM, PdM)")
+    ]
+    fu_df = fu_df[sheet_to_columns["Follow Ups"]]
+
+    tr_df = source_df[
+        (source_df["Type"] ==
+         "Training - Time for Training Activities (Sys Sched)")
+    ]
+    tr_df = tr_df[sheet_to_columns["Training"]]
+
     with pd.ExcelWriter(target_path,
                         engine="xlsxwriter",
                         engine_kwargs={'options': {'strings_to_numbers': True}}) as writer:
@@ -58,6 +72,18 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
             blog_df.to_excel(
                 writer,
                 sheet_name="Backlog",
+                index=False
+            )
+        if fu_df["Work Order"].count() != 0:
+            fu_df.to_excel(
+                writer,
+                sheet_name="Follow Ups",
+                index=False
+            )
+        if tr_df["Work Order"].count() != 0:
+            tr_df.to_excel(
+                writer,
+                sheet_name="Training",
                 index=False
             )
 
@@ -143,6 +169,16 @@ def format_work_order_summary(report_path, sheet_to_columns):
 
         # disable grid lines
         sheet.sheet_view.showGridLines = False
+
+        # copy my work for the shift to clipboard
+        if sheetname == "Scheduled for Shift":
+            my_work = ""
+            for row in sheet[2:sheet.max_row]:
+                if str(row[3].value) == os.getenv("INFOR_USERNAME"):
+                    for i in [0, 2]:
+                        my_work += (str(row[i].value) + "\t")
+                    my_work += "\n"
+            pyperclip.copy(my_work)
 
         # freeze the first row
         sheet.freeze_panes = "A2"
