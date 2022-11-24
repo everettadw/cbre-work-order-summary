@@ -1,5 +1,5 @@
-from custom_webdriver import CustomChromeWebDriver
-from utils import get_file_count
+from evsauto.webdriver.chrome import CustomChromeWebDriver
+from evsauto.utils import get_file_count
 import os
 
 
@@ -11,9 +11,6 @@ def scrape_work_orders(chrome: CustomChromeWebDriver):
     # pull infor username and password from environment vars
     INFOR_USERNAME = os.getenv("INFOR_USERNAME")
     INFOR_PASSWORD = os.getenv("INFOR_PASSWORD")
-
-    # start webdriver
-    chrome.start()
 
     # open infor
     chrome.get("https://eam.amazon.com/web/base/logindisp")

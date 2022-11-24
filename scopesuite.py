@@ -1,8 +1,8 @@
-from custom_webdriver import CustomChromeWebDriver
+from evsauto.webdriver.chrome import CustomChromeWebDriver
 import os
 
 
-def submit_grades(chrome: CustomChromeWebDriver, username: str):
+def submit_grades(chrome: CustomChromeWebDriver, username: str) -> None:
     """
     Submits the highest possible grade for today in ScopeSuite.
     """
@@ -14,9 +14,6 @@ def submit_grades(chrome: CustomChromeWebDriver, username: str):
     # make sure the user exists in the environment
     if SCOPESUITE_USERNAME is None or SCOPESUITE_PASSWORD is None:
         return
-
-    # start the webdriver
-    chrome.start()
 
     # open scopesuite
     chrome.get("https://amzmanagement-us.herokuapp.com/amz/index.html#/ojl")

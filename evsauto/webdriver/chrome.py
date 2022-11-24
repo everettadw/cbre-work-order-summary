@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
-from utils import get_file_count
+from evsauto.utils import get_file_count
 
 
 class CustomChromeWebDriver:
@@ -48,6 +48,8 @@ class CustomChromeWebDriver:
 
         self.actions = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, self.default_timeout)
+
+        return self
 
     def __exit__(self, exc_type, exc_value, exc_trace):
         # close the webdriver
