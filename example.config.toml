@@ -1,0 +1,68 @@
+[scopesuite-credentials]
+
+[infor-credentials]
+
+[work-order-summary]
+date = "today"
+target-file-name = "Work Order Summary {{|d}}"
+data-file-name = "Sheet1.xlsx"
+
+[columns.due-by-midnight]
+title = "Due by Midnight"
+keep-fields = [
+    "Work Order",
+    "Equipment",
+    "Description",
+    "1 - WO Owner",
+    "Type",
+    "Sched. Start Date",
+    "PM Compliance Max",
+    "Reported By",
+]
+
+[columns.scheduled-for-shift]
+title = "Scheduled for Shift"
+keep-fields = [
+    "Work Order",
+    "Equipment",
+    "Description",
+    "1 - WO Owner",
+    "Assigned to on Activity (Top 8 activities)",
+    "PM Compliance Max",
+]
+
+[columns.backlog]
+title = "Backlog"
+keep-fields = [
+    "Work Order",
+    "Equipment",
+    "Description",
+    "1 - WO Owner",
+    "Type",
+    "Sched. Start Date",
+    "PM Compliance Max",
+    "Reported By",
+]
+
+[columns.follow-ups]
+title = "Follow Ups"
+keep-fields = [
+    "Work Order",
+    "Equipment",
+    "Description",
+    "1 - WO Owner",
+    "Type",
+    "Reported By",
+]
+
+[columns.training]
+title = "Training"
+keep-fields = [
+    "Work Order",
+    "Description",
+    "1 - WO Owner",
+    "Sched. Start Date",
+]
+
+[debug]
+environment = "development"

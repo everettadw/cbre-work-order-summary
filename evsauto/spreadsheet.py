@@ -1,9 +1,9 @@
 import contextlib
 from functools import wraps
 
-from openpyxl.utils.cell import get_column_letter
 from openpyxl import load_workbook as openpyxl_load_workbook
 from openpyxl.styles import Alignment
+from openpyxl.utils.cell import get_column_letter
 
 
 @contextlib.contextmanager

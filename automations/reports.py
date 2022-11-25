@@ -1,12 +1,13 @@
-from openpyxl.utils.cell import get_column_letter
-from openpyxl.styles import Font, PatternFill, Border, Side
 from datetime import datetime, timedelta
+
+from evsauto.spreadsheet import load_workbook, XLFormatter
+from openpyxl.styles import Font, PatternFill, Border, Side
+from openpyxl.utils.cell import get_column_letter
 import pandas as pd
 import pyperclip
-from evsauto.spreadsheet import load_workbook, XLFormatter
-import os
 
 
+# suppress warnings
 import warnings
 warnings.simplefilter("ignore")
 
@@ -90,7 +91,7 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
             )
 
 
-def format_work_order_summary(report_path, sheet_to_columns):
+def format_work_order_summary(report_path, sheet_to_columns, username):
     # use openpyxl to format the excel file
     with load_workbook(report_path) as wo_summary_report:
 
@@ -101,10 +102,11 @@ def format_work_order_summary(report_path, sheet_to_columns):
         for sheetname in wo_summary_report.sheetnames:
             sheet = wo_summary_report[sheetname]
             columns = sheet_to_columns[sheetname]
+
             centered_cols = [i for i, col in enumerate(columns) if col in [
-                'Work Order', 'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max', 'Reported By']]
+                'Work Order', 'Priority Icon', 'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max', 'Reported By', 'Parent Work Order', 'Status', 'Department', 'Organization']]
             left_indent_cols = [i for i, col in enumerate(columns) if col in [
-                'Description', 'Type', 'Equipment', '1 - WO Owner', 'Assigned to on Activity (Top 8 activities)']]
+                'Description', 'Type', 'Equipment', 'Equipment Description', '1 - WO Owner', 'Assigned to on Activity (Top 8 activities)']]
             date_cols = [i for i, col in enumerate(columns) if col in [
                 'Sched. Start Date', 'PM Compliance Min', 'PM Compliance Max']]
 
@@ -115,6 +117,9 @@ def format_work_order_summary(report_path, sheet_to_columns):
                 "vertical": "center",
                 "wrap_text": True
             })
+
+            # autofit the column width
+            xlformat.autofit_columns()
 
             # set the number format of the date columns
             for row in sheet[2:sheet.max_row]:
@@ -139,25 +144,13 @@ def format_work_order_summary(report_path, sheet_to_columns):
             thin_border = Side(border_style='thin', color='FF000000')
 
             for row in sheet[1:sheet.max_row]:
-                try:
-                    if row.value:
-                        row.border = Border(
-                            left=thin_border,
-                            right=thin_border,
-                            top=thin_border,
-                            bottom=thin_border
-                        )
-                except:
-                    for cell in row:
-                        cell.border = Border(
-                            left=thin_border,
-                            right=thin_border,
-                            top=thin_border,
-                            bottom=thin_border
-                        )
-
-            # autofit the column width
-            xlformat.autofit_columns()
+                for cell in row:
+                    cell.border = Border(
+                        left=thin_border,
+                        right=thin_border,
+                        top=thin_border,
+                        bottom=thin_border
+                    )
 
             # disable grid lines
             sheet.sheet_view.showGridLines = False
@@ -166,7 +159,7 @@ def format_work_order_summary(report_path, sheet_to_columns):
             if sheetname == "Scheduled for Shift":
                 my_work = ""
                 for row in sheet[2:sheet.max_row]:
-                    if os.getenv("INFOR_USERNAME") in str(row[3].value):
+                    if username in str(row[3].value):
                         for i in [0, 2]:
                             my_work += (str(row[i].value) + "\t")
                         my_work += "\n"

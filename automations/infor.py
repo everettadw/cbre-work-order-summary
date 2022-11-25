@@ -1,6 +1,7 @@
-from evsauto.webdriver.chrome import CustomChromeWebDriver
-from evsauto.utils import get_file_count
 import os
+
+from evsauto.utils import get_file_count
+from evsauto.webdriver.chrome import CustomChromeWebDriver
 
 
 def scrape_work_orders(chrome: CustomChromeWebDriver):

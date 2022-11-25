@@ -1,8 +1,9 @@
-from evsauto.webdriver.chrome import CustomChromeWebDriver
 import os
 
+from evsauto.webdriver.chrome import CustomChromeWebDriver
 
-def submit_grades(chrome: CustomChromeWebDriver, username: str) -> None:
+
+def submit_grades(webdriver_wrapper: CustomChromeWebDriver, username: str) -> None:
     """
     Submits the highest possible grade for today in ScopeSuite.
     """
@@ -16,36 +17,37 @@ def submit_grades(chrome: CustomChromeWebDriver, username: str) -> None:
         return
 
     # open scopesuite
-    chrome.get("https://amzmanagement-us.herokuapp.com/amz/index.html#/ojl")
+    webdriver_wrapper.get(
+        "https://amzmanagement-us.herokuapp.com/amz/index.html#/ojl")
 
     # find all necessary login elements
-    username_input = chrome.find_element(
+    username_input = webdriver_wrapper.find_element(
         '//div[@class="login-content"]/input[@type="text"]')
-    password_input = chrome.find_element(
+    password_input = webdriver_wrapper.find_element(
         '//div[@class="login-content"]/input[@type="password"]')
-    submit_button = chrome.find_element(
+    submit_button = webdriver_wrapper.find_element(
         '//div[@class="login-content"]/button')
 
     # login to scopesuite
-    chrome.type_into_element(username_input, SCOPESUITE_USERNAME)
-    chrome.type_into_element(password_input, SCOPESUITE_PASSWORD)
-    chrome.click_element(submit_button)
+    webdriver_wrapper.type_into_element(username_input, SCOPESUITE_USERNAME)
+    webdriver_wrapper.type_into_element(password_input, SCOPESUITE_PASSWORD)
+    webdriver_wrapper.click_element(submit_button)
 
     # find all necessary form elements to submit today's grade
-    score_inputs = chrome.find_elements(
+    score_inputs = webdriver_wrapper.find_elements(
         '//input[@aria-valuemin="0" and @aria-valuemax="5"]')
-    score_strengths = chrome.find_elements(
+    score_strengths = webdriver_wrapper.find_elements(
         '//div[@class="attitude-item positive"]')
-    submit_button = chrome.find_element(
+    submit_button = webdriver_wrapper.find_element(
         '//button/span[contains(text(), "Submit")]/..')
 
     # loop through score inputs and give myself the highest score
     for score_input in score_inputs:
-        chrome.type_into_element(score_input, '5')
+        webdriver_wrapper.type_into_element(score_input, '5')
 
     # loop through strenghts/weaknesses and give myself all strengths
     for score_strength in score_strengths:
-        chrome.click_element(score_strength)
+        webdriver_wrapper.click_element(score_strength)
 
     # submit grade for today
-    chrome.click_element(submit_button)
+    webdriver_wrapper.click_element(submit_button)

@@ -1,61 +1,40 @@
-# necessary imports
-from config import WorkOrderSummaryConfig as wos_config
-from evsauto.webdriver.chrome import CustomChromeWebDriver
-from evsauto.utils import isin_production
-from dotenv import load_dotenv
-import scopesuite
-import reports
-import eam
-import sys
+from datetime import datetime
 import os
 
-
-# set the root path for the application depending
-#   on the current environment
-if isin_production():
-    ROOT_PATH = os.path.dirname(sys.executable)
-else:
-    ROOT_PATH = os.path.dirname(
-        os.path.dirname(os.path.dirname(sys.executable)))
-
-
-# application global constants
-DRIVER_PATH = os.path.join(ROOT_PATH, 'chromedriver', 'chromedriver.exe')
-DOWNLOAD_PATH = os.path.join(ROOT_PATH, 'downloads')
-ENV_PATH = os.path.join(ROOT_PATH, '.env')
-
-# load environment variables
-load_dotenv(dotenv_path=ENV_PATH)
-
-# setup the webdriver and email instances
-CHROME_DRIVER = CustomChromeWebDriver(
-    driver_path=DRIVER_PATH,
-    download_path=DOWNLOAD_PATH
-)
+from automations.scopesuite import submit_grades
+from automations.reports import generate_work_order_summary, format_work_order_summary
+from automations.infor import scrape_work_orders
+from evsauto.config import TOMLWrapper
+from evsauto.webdriver.chrome import CustomChromeWebDriver
 
 
 def main():
-    """Main function that is run when 'app.py' is directly run."""
+    # init the config wrapper and get the config as a dict
+    config_wrapper = TOMLWrapper('config.toml')
+    config = config_wrapper.get_dict()
+    settings = config['settings']
 
-    # do the webdriver portion of the automation process
-    with CHROME_DRIVER as chrome:
-        submit_grades(webdriver=chrome)
-        scrape_work_orders(webdriver=chrome)
+    # setup webdriver wrapper
+    chrome_driver_wrapper = CustomChromeWebDriver(
+        driver_path=os.path.join(
+            os.getcwd(), "chromedriver", "chromedriver.exe"),
+        download_path=os.path.join(os.getcwd(), "downloads"),
+    )
 
-    # do the excel portion of the automation process
-    generate_reports(
-        path=DOWNLOAD_PATH,
-        config=wos_config)
+    # webdriver magic
+    if settings['webdriver']:
+        with chrome_driver_wrapper as chrome:
+            if settings['scopesuite']:
+                submit_grades(webdriver_wrapper=chrome, username="DEVERDAN")
+            if settings['scrape-infor']:
+                scrape_work_orders(webdriver_wrapper=chrome)
 
-
-def scrape_work_orders(webdriver):
-    """Downloads a file of all open work orders."""
-    eam.scrape_work_orders(webdriver)
-
-
-def submit_grades(webdriver, username="DEVERDAN"):
-    """Submits a 100% grade for today in ScopeSuite with all strengths."""
-    scopesuite.submit_grades(webdriver, username)
+    # spreadsheet magic
+    if settings['reports']:
+        generate_reports(
+            path=chrome_driver_wrapper.download_path,
+            config=config,
+        )
 
 
 def generate_reports(path, config):
@@ -65,35 +44,33 @@ def generate_reports(path, config):
     stored in the WebDriver's downloads directory.
     """
 
-    SOURCE_PATH = os.path.join(
-        path,
-        config.SOURCE_FILE_NAME
-    )
-    TARGET_PATH = os.path.join(
-        path,
-        config.TARGET_FILE_NAME
-    )
+    wos_config = config['work-order-summary']
 
-    reports.generate_work_order_summary(
+    target_date = datetime.today(
+    ) if wos_config['date'] == 'today' else datetime.strptime(wos_config['date'], "%m/%d/%Y")
+    columns = wos_config['columns']
+
+    column_layout = {}
+    for col in columns:
+        column_layout[col['title']] = col['keep-fields']
+
+    target_file_name = wos_config['target-file-name'].replace(
+        '{{|d}}', target_date.strftime("%#m-%#d-%Y"))
+
+    SOURCE_PATH = os.path.join(path, wos_config['data-file-name'])
+    TARGET_PATH = os.path.join(path, target_file_name)
+
+    generate_work_order_summary(
         SOURCE_PATH,
         TARGET_PATH,
-        config.COLUMN_LAYOUT,
-        config.TARGET_DATE
+        column_layout,
+        target_date,
     )
-    reports.format_work_order_summary(
+    format_work_order_summary(
         TARGET_PATH,
-        config.COLUMN_LAYOUT
+        column_layout,
+        config['infor-credentials']['username']
     )
-
-
-def fill_shift_template(template_file_path, shift_summary_path, username='DEVERDAN'):
-    """Copy work for the shift over to the given shift template."""
-    pass
-
-
-def send_reports(email):
-    """Send reports located in the WebDriver's downloads directory to where they need to go."""
-    pass
 
 
 if __name__ == "__main__":

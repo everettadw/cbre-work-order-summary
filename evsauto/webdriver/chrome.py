@@ -1,13 +1,13 @@
 from time import sleep
+
+from evsauto.utils import get_file_count
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-
-from evsauto.utils import get_file_count
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class CustomChromeWebDriver:
