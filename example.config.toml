@@ -1,10 +1,17 @@
+[settings]
+webdriver = false
+scopesuite = false
+scrape-infor = false
+reports = false
+
 [scopesuite-credentials]
 
 [infor-credentials]
 
 [work-order-summary]
 date = "today"
-target-file-name = "Work Order Summary {{|d}}"
+night-shift = true
+target-file-name = "Work Order Summary {{|d}}.xlsx"
 data-file-name = "Sheet1.xlsx"
 
 [columns.due-by-midnight]
