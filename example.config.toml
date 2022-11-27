@@ -14,7 +14,7 @@ night-shift = true
 target-file-name = "Work Order Summary {{|d}}.xlsx"
 data-file-name = "Sheet1.xlsx"
 
-[columns.due-by-midnight]
+[[work-order-summary.columns]]
 title = "Due by Midnight"
 keep-fields = [
     "Work Order",
@@ -27,7 +27,7 @@ keep-fields = [
     "Reported By",
 ]
 
-[columns.scheduled-for-shift]
+[[work-order-summary.columns]]
 title = "Scheduled for Shift"
 keep-fields = [
     "Work Order",
@@ -38,7 +38,7 @@ keep-fields = [
     "PM Compliance Max",
 ]
 
-[columns.backlog]
+[[work-order-summary.columns]]
 title = "Backlog"
 keep-fields = [
     "Work Order",
@@ -51,7 +51,7 @@ keep-fields = [
     "Reported By",
 ]
 
-[columns.follow-ups]
+[[work-order-summary.columns]]
 title = "Follow Ups"
 keep-fields = [
     "Work Order",
@@ -62,7 +62,7 @@ keep-fields = [
     "Reported By",
 ]
 
-[columns.training]
+[[work-order-summary.columns]]
 title = "Training"
 keep-fields = [
     "Work Order",
