@@ -1,12 +1,9 @@
-import os
-
 import tomlkit
 
 
 class TOMLWrapper:
-    def __init__(self, config_file_name):
-        self.file_name = config_file_name
-        self.file_path = os.path.join(os.getcwd(), config_file_name)
+    def __init__(self, config_file_path):
+        self.file_path = config_file_path
 
         with open(self.file_path, mode='rt', encoding='utf-8') as f:
             self.config = tomlkit.load(f)

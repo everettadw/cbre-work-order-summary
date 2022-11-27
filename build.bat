@@ -1,0 +1,1 @@
+call "./env/Scripts/activate" & pyinstaller --onefile --name EvsAuto app.py

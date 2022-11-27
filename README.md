@@ -20,7 +20,7 @@ Personal tools to help automate paperwork.
 &nbsp;&nbsp;&nbsp;&nbsp;
 `python -m pip install -r requirements.txt`
 
-**Step 5:** Create `downloads` folder in base directory\
-**Step 6:** Create `.env` file in base directory &amp; insert login credentials
+**Step 5:** Rename `example.config.toml` to `config.toml`
+**Step 6:** Put login credentials into `config.toml`
 
 **Done!**

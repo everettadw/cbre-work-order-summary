@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 
 def get_file_count(path: str) -> int:
@@ -12,3 +13,10 @@ def get_file_count(path: str) -> int:
 def replace_escapes(string: str) -> str:
     """Escapes a string with tabs and newlines."""
     return re.sub('[\t\r\n]', '', string.strip())
+
+
+def is_executable() -> bool:
+    """Returns true if the code is running from inside an .exe file."""
+    if getattr(sys, 'frozen', False):
+        return True
+    return False

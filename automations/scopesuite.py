@@ -1,20 +1,10 @@
-import os
-
 from evsauto.webdriver.chrome import CustomChromeWebDriver
 
 
-def submit_grades(webdriver_wrapper: CustomChromeWebDriver, username: str) -> None:
+def submit_grades(webdriver_wrapper: CustomChromeWebDriver, username: str, password: str) -> None:
     """
     Submits the highest possible grade for today in ScopeSuite.
     """
-
-    # grab login details from environment vars
-    SCOPESUITE_USERNAME = os.getenv(f"{username}_SS_USERNAME")
-    SCOPESUITE_PASSWORD = os.getenv(f"{username}_SS_PASSWORD")
-
-    # make sure the user exists in the environment
-    if SCOPESUITE_USERNAME is None or SCOPESUITE_PASSWORD is None:
-        return
 
     # open scopesuite
     webdriver_wrapper.get(
@@ -29,8 +19,8 @@ def submit_grades(webdriver_wrapper: CustomChromeWebDriver, username: str) -> No
         '//div[@class="login-content"]/button')
 
     # login to scopesuite
-    webdriver_wrapper.type_into_element(username_input, SCOPESUITE_USERNAME)
-    webdriver_wrapper.type_into_element(password_input, SCOPESUITE_PASSWORD)
+    webdriver_wrapper.type_into_element(username_input, username)
+    webdriver_wrapper.type_into_element(password_input, password)
     webdriver_wrapper.click_element(submit_button)
 
     # find all necessary form elements to submit today's grade
@@ -51,3 +41,5 @@ def submit_grades(webdriver_wrapper: CustomChromeWebDriver, username: str) -> No
 
     # submit grade for today
     webdriver_wrapper.click_element(submit_button)
+
+    # ADD CLICKING LOGOUT

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from pathlib import Path
 
 from evsauto.spreadsheet import load_workbook, XLFormatter
 from openpyxl.styles import Font, PatternFill, Border, Side
@@ -12,7 +12,7 @@ import warnings
 warnings.simplefilter("ignore")
 
 
-def generate_work_order_summary(source_path, target_path, sheet_to_columns, date=datetime.today()):
+def generate_work_order_summary(source_path, target_path, sheet_to_columns, date):
     source_df = pd.read_excel(source_path, engine="openpyxl")
     source_df = source_df.convert_dtypes()
 
@@ -21,8 +21,7 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
         "PM - Preventative Maintenance"
     ]
     mc_date_filter = date.strftime("%#m/%#d/%Y")
-    tw_date_filter = date + timedelta(days=1)
-    tw_date_filter = tw_date_filter.strftime("%#m/%#d/%Y")
+    tw_date_filter = date.strftime("%#m/%#d/%Y")
 
     mc_df = source_df[
         source_df.Type.isin(mc_type_filter) &
@@ -55,6 +54,10 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
          "Training - Time for Training Activities (Sys Sched)")
     ]
     tr_df = tr_df[sheet_to_columns["Training"]]
+
+    if Path(target_path).exists():
+        # delete target path
+        Path(target_path).unlink()
 
     with pd.ExcelWriter(target_path,
                         engine="xlsxwriter",
