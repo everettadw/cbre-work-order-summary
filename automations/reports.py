@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 from evsauto.spreadsheet import load_workbook, XLFormatter
@@ -20,7 +21,8 @@ def generate_work_order_summary(source_path, target_path, sheet_to_columns, date
         "PdM - Work using a Predictive Tool",
         "PM - Preventative Maintenance"
     ]
-    mc_date_filter = date.strftime("%#m/%#d/%Y")
+    mc_date_filter = date - timedelta(days=1)
+    mc_date_filter = mc_date_filter.strftime("%#m/%#d/%Y")
     tw_date_filter = date.strftime("%#m/%#d/%Y")
 
     mc_df = source_df[
