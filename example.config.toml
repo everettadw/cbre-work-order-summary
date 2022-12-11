@@ -15,6 +15,18 @@ target-file-name = "Work Order Summary {{|d}}.xlsx"
 data-file-name = "Sheet1.xlsx"
 
 [[work-order-summary.columns]]
+title = "Work Orders Involving Me"
+keep-fields = [
+    "Work Order",
+    "Equipment",
+    "Description",
+    "1 - WO Owner",
+    "Type",
+    "Sched. Start Date",
+    "PM Compliance Max",
+]
+
+[[work-order-summary.columns]]
 title = "Due by Midnight"
 keep-fields = [
     "Work Order",
@@ -24,7 +36,6 @@ keep-fields = [
     "Type",
     "Sched. Start Date",
     "PM Compliance Max",
-    "Reported By",
 ]
 
 [[work-order-summary.columns]]

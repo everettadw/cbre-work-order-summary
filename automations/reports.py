@@ -13,83 +13,111 @@ import warnings
 warnings.simplefilter("ignore")
 
 
-def generate_work_order_summary(source_path, target_path, sheet_to_columns, date):
+def debug_func(source_path, date):
     source_df = pd.read_excel(source_path, engine="openpyxl")
     source_df = source_df.convert_dtypes()
+
+    source_df.drop(source_df.loc[
+        source_df["1 - WO Owner"] != "DEVERDAN"
+    ].index, inplace=True)
+    # source_df.drop(
+    #     source_df.loc[source_df["Sched. Start Date"] > date].index, inplace=True)
+
+    print(source_df["Work Order"].count())
+
+
+def generate_work_order_summary(source_path, target_path, sheet_to_columns, username, mc_date, date):
+    source_df = pd.read_excel(source_path, engine="openpyxl")
+    source_df = source_df.convert_dtypes()
+
+    all_work_orders_df = source_df[
+        ((source_df["1 - WO Owner"].eq(username)) |
+         source_df["Assigned to on Activity (Top 8 activities)"].str.contains(username)) &
+        (pd.to_datetime(source_df["Sched. Start Date"])
+         <= pd.Timestamp(date.year, date.month, date.day))
+    ]
+    all_work_orders_df = all_work_orders_df.sort_values(
+        by=["Sched. Start Date"], ascending=False)
+    all_work_orders_df = all_work_orders_df[sheet_to_columns["Work Orders Involving Me"]]
 
     mc_type_filter = [
         "PdM - Work using a Predictive Tool",
         "PM - Preventative Maintenance"
     ]
-    mc_date_filter = date - timedelta(days=1)
-    mc_date_filter = mc_date_filter.strftime("%#m/%#d/%Y")
-    tw_date_filter = date.strftime("%#m/%#d/%Y")
-
-    mc_df = source_df[
+    max_compliance_df = source_df[
         source_df.Type.isin(mc_type_filter) &
-        (source_df["PM Compliance Max"] == mc_date_filter)
+        (pd.to_datetime(source_df["PM Compliance Max"]).eq(
+            pd.Timestamp(mc_date.year, mc_date.month, mc_date.day)))
     ]
-    mc_df = mc_df[sheet_to_columns["Due by Midnight"]]
+    max_compliance_df = max_compliance_df[sheet_to_columns["Due by Midnight"]]
 
-    blog_df = source_df[
+    backlog_df = source_df[
         (source_df.Type != "Training - Time for Training Activities (Sys Sched)") &
-        (source_df["Sched. Start Date"] <= date)
+        (pd.to_datetime(source_df["Sched. Start Date"])
+         < pd.Timestamp(date.year, date.month, date.day))
     ]
-    blog_df = blog_df.drop(mc_df.index)
-    blog_df = blog_df[sheet_to_columns["Backlog"]]
+    backlog_df = backlog_df.drop(max_compliance_df.index)
+    backlog_df = backlog_df[sheet_to_columns["Backlog"]]
 
-    tw_df = source_df[
-        (source_df["Sched. Start Date"] == tw_date_filter) &
-        (source_df.Type != "Training - Time for Training Activities (Sys Sched)")
+    todays_work_df = source_df[
+        (source_df.Type != "Training - Time for Training Activities (Sys Sched)") &
+        (pd.to_datetime(source_df["Sched. Start Date"]).eq(
+            pd.Timestamp(date.year, date.month, date.day)))
     ]
-    tw_df = tw_df[sheet_to_columns["Scheduled for Shift"]]
-    tw_df = tw_df.sort_values(by=["1 - WO Owner"], ascending=True)
+    todays_work_df = todays_work_df[sheet_to_columns["Scheduled for Shift"]]
+    todays_work_df = todays_work_df.sort_values(
+        by=["1 - WO Owner"], ascending=True)
 
-    fu_df = source_df[
+    follow_ups_df = source_df[
         (source_df["Type"] ==
          "Follow-Up - Comes from a scheduled WO Checklist (PM, PdM)")
     ]
-    fu_df = fu_df[sheet_to_columns["Follow Ups"]]
+    follow_ups_df = follow_ups_df[sheet_to_columns["Follow Ups"]]
 
-    tr_df = source_df[
+    training_df = source_df[
         (source_df["Type"] ==
          "Training - Time for Training Activities (Sys Sched)")
     ]
-    tr_df = tr_df[sheet_to_columns["Training"]]
+    training_df = training_df[sheet_to_columns["Training"]]
 
     if Path(target_path).exists():
-        # delete target path
-        Path(target_path).unlink()
+        Path(target_path).unlink()  # delete
 
     with pd.ExcelWriter(target_path,
                         engine="xlsxwriter",
                         engine_kwargs={'options': {'strings_to_numbers': True}}) as writer:
-        if tw_df["Work Order"].count() != 0:
-            tw_df.to_excel(
+        if all_work_orders_df["Work Order"].count() != 0:
+            all_work_orders_df.to_excel(
+                writer,
+                sheet_name="Work Orders Involving Me",
+                index=False
+            )
+        if todays_work_df["Work Order"].count() != 0:
+            todays_work_df.to_excel(
                 writer,
                 sheet_name="Scheduled for Shift",
                 index=False
             )
-        if mc_df["Work Order"].count() != 0:
-            mc_df.to_excel(
+        if max_compliance_df["Work Order"].count() != 0:
+            max_compliance_df.to_excel(
                 writer,
                 sheet_name="Due by Midnight",
                 index=False
             )
-        if blog_df["Work Order"].count() != 0:
-            blog_df.to_excel(
+        if backlog_df["Work Order"].count() != 0:
+            backlog_df.to_excel(
                 writer,
                 sheet_name="Backlog",
                 index=False
             )
-        if fu_df["Work Order"].count() != 0:
-            fu_df.to_excel(
+        if follow_ups_df["Work Order"].count() != 0:
+            follow_ups_df.to_excel(
                 writer,
                 sheet_name="Follow Ups",
                 index=False
             )
-        if tr_df["Work Order"].count() != 0:
-            tr_df.to_excel(
+        if training_df["Work Order"].count() != 0:
+            training_df.to_excel(
                 writer,
                 sheet_name="Training",
                 index=False
@@ -127,7 +155,7 @@ def format_work_order_summary(report_path, sheet_to_columns, username):
             xlformat.autofit_columns()
 
             # set the number format of the date columns
-            for row in sheet[2:sheet.max_row]:
+            for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
                 for i in date_cols:
                     row[i].number_format = "m/d/yyyy"
 
@@ -148,7 +176,7 @@ def format_work_order_summary(report_path, sheet_to_columns, username):
             # set the borders of the table
             thin_border = Side(border_style='thin', color='FF000000')
 
-            for row in sheet[1:sheet.max_row]:
+            for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row):
                 for cell in row:
                     cell.border = Border(
                         left=thin_border,
@@ -163,7 +191,7 @@ def format_work_order_summary(report_path, sheet_to_columns, username):
             # copy my work for the shift to clipboard
             if sheetname == "Scheduled for Shift":
                 my_work = ""
-                for row in sheet[2:sheet.max_row]:
+                for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
                     if username in str(row[3].value):
                         for i in [0, 2]:
                             my_work += (str(row[i].value) + "\t")
